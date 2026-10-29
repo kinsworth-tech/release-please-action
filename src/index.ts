@@ -13,13 +13,26 @@
 // limitations under the License.
 
 import * as core from '@actions/core';
-import {GitHub, Manifest, CreatedRelease, PullRequest, VERSION} from 'release-please';
+import {
+  GitHub,
+  Manifest,
+  CreatedRelease,
+  PullRequest,
+  registerChangelogNotes,
+  VERSION,
+} from 'release-please';
+import {DefaultPullRequestChangelogNotes} from './default-changelog-notes';
 
 const DEFAULT_CONFIG_FILE = 'release-please-config.json';
 const DEFAULT_MANIFEST_FILE = '.release-please-manifest.json';
 const DEFAULT_GITHUB_API_URL = 'https://api.github.com';
 const DEFAULT_GITHUB_GRAPHQL_URL = 'https://api.github.com';
 const DEFAULT_GITHUB_SERVER_URL = 'https://github.com';
+
+registerChangelogNotes(
+  'default',
+  options => new DefaultPullRequestChangelogNotes(options)
+);
 
 interface Proxy {
   host: string;
