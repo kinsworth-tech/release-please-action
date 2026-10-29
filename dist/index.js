@@ -95027,6 +95027,42 @@ try {
 
 /***/ }),
 
+/***/ 54056:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DefaultPullRequestChangelogNotes = exports.usePullRequestLinks = void 0;
+const default_1 = __nccwpck_require__(71480);
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function usePullRequestLinks(notes, commits, options) {
+    var _a;
+    const pullRequestNumbers = new Set(commits
+        .map(commit => { var _a; return (_a = commit.pullRequest) === null || _a === void 0 ? void 0 : _a.number; })
+        .filter((number) => number !== undefined));
+    const host = (_a = options.host) !== null && _a !== void 0 ? _a : 'https://github.com';
+    const linkPattern = new RegExp(`(https://github\\.com/${escapeRegex(options.owner)}/${escapeRegex(options.repository)}/)issues/(\\d+)`, 'g');
+    if (host !== 'https://github.com' || pullRequestNumbers.size === 0) {
+        return notes;
+    }
+    return notes.replace(linkPattern, (url, prefix, number) => pullRequestNumbers.has(Number(number)) ? `${prefix}pull/${number}` : url);
+}
+exports.usePullRequestLinks = usePullRequestLinks;
+class DefaultPullRequestChangelogNotes {
+    constructor(options) {
+        this.defaultNotes = new default_1.DefaultChangelogNotes(options);
+    }
+    async buildNotes(commits, options) {
+        const notes = await this.defaultNotes.buildNotes(commits, options);
+        return usePullRequestLinks(notes, commits, options);
+    }
+}
+exports.DefaultPullRequestChangelogNotes = DefaultPullRequestChangelogNotes;
+
+
+/***/ }),
+
 /***/ 39491:
 /***/ ((module) => {
 
@@ -105881,11 +105917,13 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.main = void 0;
 const core = __nccwpck_require__(42186);
 const release_please_1 = __nccwpck_require__(24363);
+const default_changelog_notes_1 = __nccwpck_require__(54056);
 const DEFAULT_CONFIG_FILE = 'release-please-config.json';
 const DEFAULT_MANIFEST_FILE = '.release-please-manifest.json';
 const DEFAULT_GITHUB_API_URL = 'https://api.github.com';
 const DEFAULT_GITHUB_GRAPHQL_URL = 'https://api.github.com';
 const DEFAULT_GITHUB_SERVER_URL = 'https://github.com';
+(0, release_please_1.registerChangelogNotes)('default', options => new default_changelog_notes_1.DefaultPullRequestChangelogNotes(options));
 function parseInputs() {
     const inputs = {
         token: core.getInput('token', { required: true }),
